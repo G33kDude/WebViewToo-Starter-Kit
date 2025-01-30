@@ -1,0 +1,4 @@
+[submodule "WebViewToo"]
+	path = WebViewToo
+	url = https://github.com/G33kDude/WebViewToo.git
+	branch = main
