@@ -5,6 +5,8 @@ Demonstrates advanced usage of the routing functions of WebViewTooEx, to load
 resources from a variety of places like Strings, Buffers, Files, Directories,
 CHM Files, and dynamic generation.
 
+![Advanced Routing](./Advanced%20Routing.png)
+
 ## Advanced Routing.ahk
 
 ```plain

@@ -5,6 +5,8 @@ This script demonstrates using the Vue framework with WebViewToo. The Vue
 framework allows a combination of plain javascript files and modern reactive
 web development practices.
 
+![Vue Framework](./Vue%20Framework.png)
+
 The code in this folder is licensed as specified below, but it does pull in
 third-party dependencies at load-time which are licensed separately.
 

@@ -7,6 +7,8 @@ extraneous whitespace and comments. Note that some included library files may
 contain licensing information that would need to be re-added before the combined
 script can be distributed.
 
+![Script Packager](./Script%20Packager.png)
+
 ## Script Packager.ahk
 
 ```plain

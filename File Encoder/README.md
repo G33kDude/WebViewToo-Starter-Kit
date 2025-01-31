@@ -6,6 +6,8 @@ function that will return a `Buffer` with the original file contents. This can
 be used to do things like embed image files into your script so they can be
 loaded later by WebViewToo.
 
+![File Encoder](./File%20Encoder.png)
+
 ## File Encoder.ahk
 
 ```plain
