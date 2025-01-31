@@ -1,5 +1,5 @@
 
-#Include ..\WebViewToo\Lib\WebViewToo.ahk
+#Include WebViewToo\Lib\WebViewToo.ahk
 #Include Uri.ahk
 
 class WebViewTooEx extends WebViewToo {
