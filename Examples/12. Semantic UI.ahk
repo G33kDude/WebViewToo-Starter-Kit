@@ -2,7 +2,7 @@
 
 ; This example displays a UI built using the Semantic UI CSS framework.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 g := WebViewGui("Resize -Caption")
 g.AddTextRoute "index.html", "

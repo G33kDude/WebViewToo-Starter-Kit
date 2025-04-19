@@ -5,7 +5,7 @@
 ; directory.
 
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 ; Specify any resources from the script directory that need to be available
 ; when the script is compiled

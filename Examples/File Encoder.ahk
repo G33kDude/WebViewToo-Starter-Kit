@@ -5,7 +5,7 @@
 ; contents. This can be used to do things like embed image files into your
 ; script so they can be loaded later in the web view.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 ; The file to encode
 TargetFile := ""

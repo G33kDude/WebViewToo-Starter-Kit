@@ -4,7 +4,7 @@
 ; of having multiple pages, using JavaScript to create a real tab-style
 ; interface that hides and shows different sections of the UI.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 ; Specify any resources from the script directory that need to be available
 ; when the script is compiled

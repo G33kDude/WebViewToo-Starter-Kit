@@ -3,7 +3,7 @@
 ; This example displays a UI built using the Vue JavaScript framework, and
 ; Vuetify component framework.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 global startingStore := Map(
 	"name", A_UserName

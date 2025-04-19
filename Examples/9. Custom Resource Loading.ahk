@@ -6,7 +6,7 @@
 ; this example, we demonstrate how resources can be supplied dynamically at
 ; run-time based on the path it was requested from.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 g := WebViewGui("Resize")
 

@@ -2,7 +2,7 @@
 
 ; Run me!
 
-#Include Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include Lib\WebViewToo.ahk
 
 g := WebViewGui("Resize")
 

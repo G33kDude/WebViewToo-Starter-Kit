@@ -3,7 +3,7 @@
 ; This example displays a static UI loaded from the local directory. All
 ; resources, including HTML and Image resources, are loaded from a folder.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 ; Specify any resources from the script directory that need to be available
 ; when the script is compiled

@@ -6,7 +6,7 @@
 ; contain licensing information that would need to be re-added before the
 ; combined script can be distributed.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 ; The file to package
 TargetFile := ""

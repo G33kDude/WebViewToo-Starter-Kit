@@ -4,7 +4,7 @@
 ; integrations like pushing data to the page for display, buttons on the page to
 ; invoke AHK functions, and a simple form submission strategy.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 g := WebViewGui("Resize")
 g.AddTextRoute "index.html", "

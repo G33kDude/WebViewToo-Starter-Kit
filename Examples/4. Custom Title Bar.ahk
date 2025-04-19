@@ -4,7 +4,7 @@
 ; disabled and replace with a completely custom title bar implemented in HTML
 ; and CSS.
 
-#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+#Include ..\Lib\WebViewToo.ahk
 
 g := WebViewGui("Resize -Caption")
 g.AddTextRoute "index.html", "
