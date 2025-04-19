@@ -1,6 +1,25 @@
 
 # WebViewToo Starter Kit
 
+This project aims to provide everything you need to get started using
+WebViewToo.
+
+# Download and Install
+
+The latest version can always be found on [the GitHub release page](
+https://github.com/G33kDude/WebViewToo-Starter-Kit/releases).
+
+### &#9888; IMPORTANT &#9888;
+
+Do not download using the links labeled `Source Code (zip)`,
+`Source Code (tar.gz)`, or `Download ZIP`. These downloads will not include
+critical libraries required to make WebViewToo work.
+
+### &#9888; IMPORTANT &#9888;
+
+Once downloaded, extract the zip file to a folder. Examples can be run directly
+from the extracted folder. To install WebViewToo to your system, copy the
+`Lib\WebViewToo.ahk` file to `Documents\AutoHotkey\Lib\WebViewToo.ahk`.
 
 # Licensing
 
@@ -51,7 +70,7 @@
 <details>
 <summary>10. Bootstrap</summary>
 
-**bootstrap.bundle.min.js**, **bootstrap.min.css**
+**bootstrap.bundle.min.js**, **bootstrap.min.css**, **glyphicons-halflings**
 
     /*!
     * Bootstrap v5.3.1 (https://getbootstrap.com/)
@@ -66,6 +85,30 @@
     * Copyright 2011-2023 The Bootstrap Authors
     * Licensed under the Creative Commons Attribution 3.0 Unported License.
     */
+
+**Other files**
+
+    MIT License
+
+    Copyright (c) 2025 Ryan Dingman (known also as Panaku, The-CoDingman)
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
 
 </details>
 
