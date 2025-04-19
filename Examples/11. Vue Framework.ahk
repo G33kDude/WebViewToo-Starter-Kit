@@ -1,16 +1,18 @@
 #Requires AutoHotkey v2
 
+; This example displays a UI built using the Vue JavaScript framework, and
+; Vuetify component framework.
+
+#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+
 global startingStore := Map(
 	"name", A_UserName
 )
 
-win := WebViewTooEx(,,, True)
+win := WebViewGui("Resize -Caption")
 
-win.Route 'ahk.localhost', A_WorkingDir
-
-win.AllowGlobalAccessFor 'ahk.localhost'
-
-win.Navigate "https://ahk.localhost/index.html"
+win.BrowseFolder "11. Vue Framework"
+win.Navigate "index.html"
 win.Show "w800 h600"
 
 WebButtonClickEvent(button) {
@@ -29,5 +31,3 @@ FormSubmit(formData) {
 		"Check: " formData.check "`n"
 	)
 }
-
-#Include ..\WebViewTooEx.ahk

@@ -11,9 +11,10 @@ const template = `
 	<v-app-bar-title>WebViewToo</v-app-bar-title>
 	<template #append>
 		<span style="font-family: Webdings; font-size: 11pt; -webkit-app-region: no-drag;">
-			<v-btn variant="text" @click="ahk.Minimize()">0</v-btn>
-			<v-btn variant="text" @click="ahk.Maximize()">{{ isMaximized ? 2 : 1 }}</v-btn>
-			<v-btn variant="text" style="text-transform: unset" color="red" @click="ahk.Close()">r</v-btn>
+			<v-btn variant="text" @click="ahk.gui.Minimize()">0</v-btn>
+			<v-btn v-if="!isMaximized" variant="text" @click="ahk.gui.Maximize()">1</v-btn>
+			<v-btn v-else variant="text" @click="ahk.gui.Restore()">2</v-btn>
+			<v-btn variant="text" style="text-transform: unset" color="red" @click="ahk.gui.Hide()">r</v-btn>
 		</span>
 	</template>
 </v-app-bar>

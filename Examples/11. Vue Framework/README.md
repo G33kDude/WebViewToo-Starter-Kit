@@ -1,14 +1,12 @@
 
-# File Encoder
+# Vue Framework
 
-Takes an input file (text or binary like png) and converts it to an AutoHotkey
-function that will return a `Buffer` with the original file contents. This can
-be used to do things like embed image files into your script so they can be
-loaded later by WebViewToo.
+This script demonstrates using the Vue framework with WebViewToo. The Vue
+framework allows a combination of plain javascript files and modern reactive
+web development practices.
 
-![File Encoder](./File%20Encoder.png)
-
-## File Encoder.ahk
+The code in this folder is licensed as specified below, but it does pull in
+third-party dependencies at load-time which are licensed separately.
 
 ```plain
 Copyright (C) 2025 by Philip Taylor <GeekDudeAHK@Gmail.com> (known also as
@@ -24,23 +22,4 @@ FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY
 DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
 AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-```
-
-## Normalize.css
-
-```plain
-normalize.css v8.0.1
-MIT License
-https://github.com/necolas/normalize.css
-```
-
-## Skeleton.css
-
-```plain
-Skeleton V2.0.4
-Copyright 2014, Dave Gamache
-www.getskeleton.com
-Free to use under the MIT license.
-http://www.opensource.org/licenses/mit-license.php
-12/29/2014
 ```

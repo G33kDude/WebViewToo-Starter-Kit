@@ -6,11 +6,18 @@
 ; contain licensing information that would need to be re-added before the
 ; combined script can be distributed.
 
-; The file to encode
+#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+
+; The file to package
 TargetFile := ""
 
-; HTML content for the page
-html := "
+win := WebViewGui()
+
+; Add Skeleton CSS framework
+win.AddTextRoute '/normalize.css', Normalize()
+win.AddTextRoute '/skeleton.css', Skeleton()
+
+win.AddTextRoute '/index.html', "
 ( ; html
 <!doctype html><html>
 <head>
@@ -21,51 +28,40 @@ html := "
 </head>
 <body>
 	<div class="row">
-		<div class="four columns">
+		<div class="six columns">
 			<label for="chooseFile">File <span id="chosenFile">...</span></label>
 			<button
 				id="chooseFile"
 				class="u-full-width"
 			>Choose File</button>
 		</div>
-		<div class="four columns">
-			<label for="charsPerLine">Characters per Line</label>
-			<input
-				id="charsPerLine"
-				type="number"
-				onInput="ahk.global.SetCharsPerLine(event.target.value)"
-				value="120"
-				class="u-full-width"
-			/>
+		<div class="six columns">
+			<label>
+				<input type="checkbox" id="keepComments" checked>
+				<span class="label-body">Keep Comments</span>
+			</label>
+			<label>
+				<input type="checkbox" id="keepWhitespace" checked>
+				<span class="label-body">Keep Whitespace</span>
+			</label>
 		</div>
-		<div class="four columns">
-			<label for="linesPerChunk">Lines per Chunk</label>
-			<input
-				id="linesPerChunk"
-				type="number"
-				onInput="ahk.global.SetLinesPerChunk(event.target.value)"
-				value="100"
-				class="u-full-width"
-			/>
-		</div>
-		<button id="convert" class="u-full-width button-primary">Encode</button>
-		<textarea
-			readonly
-			id="output"
-			class="u-full-width"
-			style="font: 10px monospace; height: 400px; resize: vertical"
-		></textarea>
 	</div>
+	<button id="convert" class="u-full-width button-primary">Package</button>
+	<textarea
+		readonly
+		id="output"
+		class="u-full-width"
+		style="font: 10px monospace; height: 400px; resize: vertical"
+	></textarea>
 </body>
+</html>
 )"
-
-; JavaScript content for the page
-script := "
+win.AddTextRoute "index.js", "
 ( ; js
 const chooseFile = document.getElementById("chooseFile")
 const chosenFile = document.getElementById("chosenFile")
-const charsPerLine = document.getElementById("charsPerLine")
-const linesPerChunk = document.getElementById("linesPerChunk")
+const keepComments = document.getElementById("keepComments")
+const keepWhitespace = document.getElementById("keepWhitespace")
 const convert = document.getElementById("convert")
 const output = document.getElementById("output")
 
@@ -74,82 +70,226 @@ chooseFile.addEventListener("click", async () => {
 })
 
 convert.addEventListener("click", async () => {
-	output.value = await ahk.global.Convert(charsPerLine.value, linesPerChunk.value)
+	output.value = await ahk.global.Convert(keepWhitespace.checked, keepComments.checked)
 })
 )"
 
-win := WebViewTooEx()
-
-; Map ahk.localhost URLs to these resources
-win.Route 'ahk.localhost', [
-	['/index.html', html],
-	['/index.js', script],
-	['/normalize.css', normalize()],
-	['/skeleton.css', skeleton()],
-]
-
-; Allow ahk.localhost pages to use AHK variables and functions by direct access
-win.AllowGlobalAccessFor 'ahk.localhost'
-
 ; Show the page
-win.Navigate "https://ahk.localhost/index.html"
+win.Navigate "index.html"
 win.Show "w800 h600"
 
 ChooseFile() {
 	global TargetFile
-	return TargetFile := FileSelect()
+	return TargetFile := FileSelect(,,, "AutoHotkey Script (*.ahk)")
 }
 
-Convert(charsPerLine, linesPerChunk) {
+Convert(keepWhitespace, keepComments) {
 	if !TargetFile
 		return ""
 
-	uncompressedBuf := FileRead(TargetFile, "RAW")
-	compressedBuf := LZ_Compress(uncompressedBuf)
-	b64 := Base64_Encode(compressedBuf)
+	PreprocessScript(&scriptText := "", TargetFile,,,,, {
+		keepWhitespace: keepWhitespace,
+		keepComments: keepComments,
+	})
 
-	b64 := RegExReplace(b64, ".{1," charsPerLine "}", "$0`n")
-	b64 := RegExReplace(b64, "(.+\n){1," linesPerChunk "}", "    base64 .= '`n    (`n$0    )'`n")
-	b64 := StrReplace(b64, ".=", ":=",,, 1)
-
-	SplitPath(TargetFile,,,, &name)
-
-	return (
-		"`n"
-		name "() {`n" b64
-		'    if !DllCall("Crypt32\CryptStringToBinary", "Str", base64, "UInt", 0, "UInt", 1,`n'
-		'        "Ptr", cData := Buffer(' compressedBuf.Size '), "UInt*", cData.Size, "Ptr", 0, "Ptr", 0, "UInt")`n'
-		'        throw Error("Failed to convert b64 to binary")`n'
-		'    if (r := DllCall("ntdll\RtlDecompressBuffer", "UShort", 0x102, "Ptr", data := Buffer(' uncompressedBuf.Size '),`n'
-		'        "UInt", data.Size, "Ptr", cData, "UInt", cData.Ptr, "UInt*", &cbFinal := 0, "UInt"))`n'
-		'        throw Error("Error calling RtlDecompressBuffer", , Format("0x{:08x}", r))`n'
-		'    return data`n'
-		'}`n'
-	)
+	return scriptText
 }
 
-LZ_Compress(data) {
-	if (r := DllCall("ntdll\RtlGetCompressionWorkSpaceSize", "UShort", 0x102, "UInt*", &cbwsSize := 0,
-		"UInt*", &cfwsSize := 0, "UInt"))
-		throw Error("Erorr calling RtlGetCompressionWorkSpaceSize", , Format("0x{:08x}", r))
-	cbws := Buffer(cbwsSize)
-	cData := Buffer(data.Size * 2)
-	if (r := DllCall("ntdll\RtlCompressBuffer", "UShort", 0x102, "Ptr", data, "UInt", data.Size, "Ptr", cData,
-		"UInt", cData.Size, "UInt", cfwsSize, "UInt*", &finalSize := 0, "Ptr", cbws, "UInt"))
-		throw Error("Error calling RtlCompressBuffer", , Format("0x{:08x}", r))
-	cData.Size := finalSize
-	return cData
+;
+; Based on code from fincs' Ahk2Exe - https://github.com/fincs/ahk2exe (WTFPL)
+;
+PreprocessScript(&scriptText, ahkScriptPath, fileList := [], firstScriptDir := "", iOption := 0, derefIncludeVars := unset, options?) {
+	NormalizePath(path) {
+		cc := DllCall("GetFullPathName", "str", path, "uint", 0, "ptr", 0, "ptr", 0, "uint")
+		buf := Buffer(cc * 2)
+		DllCall("GetFullPathName", "str", path, "uint", cc, "ptr", buf, "ptr", 0)
+		return StrGet(buf)
+	}
+
+	IsRealContinuationSection(trimmedLine) {
+		loop parse trimmedLine, " `t"
+			if !(A_LoopField ~= "i)^Join") && InStr(A_LoopField, ")")
+				return false
+		return true
+	}
+
+	FindLibraryFile(name, ScriptDir) {
+		libs := [ScriptDir "\Lib", A_MyDocuments "\AutoHotkey\Lib", A_AhkPath "\..\Lib"] ; TODO: Use target ahk path
+		p := InStr(name, "_")
+		if p
+			name_lib := SubStr(name, 1, p - 1)
+
+		for each, lib in libs {
+			file := lib "\" name ".ahk"
+			If FileExist(file)
+				return file
+
+			if !p
+				continue
+
+			file := lib "\" name_lib ".ahk"
+			If FileExist(file)
+				return file
+		}
+	}
+
+	DerefIncludePath(path, vars) {
+		static SharedVars := Map("A_AhkPath", 1, "A_AppData", 1,
+			"A_AppDataCommon", 1, "A_ComputerName", 1, "A_ComSpec", 1,
+			"A_Desktop", 1, "A_DesktopCommon", 1, "A_MyDocuments", 1,
+			"A_ProgramFiles", 1, "A_Programs", 1, "A_ProgramsCommon", 1,
+			"A_Space", 1, "A_StartMenu", 1, "A_StartMenuCommon", 1, "A_Startup", 1,
+			"A_StartupCommon", 1, "A_Tab", 1, "A_Temp", 1, "A_UserName", 1,
+			"A_WinDir", 1)
+		p := StrSplit(path, "%"), path := p[1], n := 2
+		while n < p.Length {
+			path .= vars.Has(p[n]) ? vars[p[n++]] . p[n++]
+				: SharedVars.Has(p[n]) ? %SharedVars[p[n++]]% . p[n++]
+					: "%" p[n++]
+		}
+		return n > p.Length ? path : path "%" p[n]
+	}
+
+	options := options ?? {}
+
+	isFirstScript := fileList.Length == 0
+
+	; Stage the environment for processing the file
+	SplitPath NormalizePath(ahkScriptPath), &scriptName, &scriptDir
+	if isFirstScript {
+		fileList.Push(ahkScriptPath)
+		scriptText := ""
+		firstScriptDir := scriptDir
+		tempWD := CTempWD(scriptDir)
+		derefIncludeVars := Map(
+			"A_IsCompiled", true,
+			"A_LineFile", "",
+			"A_AhkVersion", A_AhkVersion, ; TODO: use target ahk version
+			"A_ScriptFullPath", ahkScriptPath,
+			"A_ScriptName", scriptName,
+			"A_ScriptDir", scriptDir,
+		)
+	}
+	oldLineFile := derefIncludeVars["A_LineFile"]
+	derefIncludeVars["A_LineFile"] := ahkScriptPath
+	oldWorkingDir := A_WorkingDir
+	SetWorkingDir scriptDir
+
+	if !FileExist(ahkScriptPath) {
+		if iOption
+			throw Error((isFirstScript ? "Script" : "#include") " file cannot be opened.", , ahkScriptPath)
+		else
+			return
+	}
+
+	inCommentBlock := false, inContinuationSection := false
+	Loop read ahkScriptPath {
+		trimmedIfNotKeepWhitespace := trimmedLine := Trim(A_LoopReadLine)
+		if (options.HasProp('keepWhitespace') && options.keepWhitespace)
+			trimmedIfNotKeepWhitespace := A_LoopReadLine
+
+		; Handle comment block contents
+		if inCommentBlock {
+			if trimmedLine ~= "^\*/|\*/$"
+				inCommentBlock := false
+			if options.HasProp('keepComments') && options.keepComments
+				scriptText .= trimmedIfNotKeepWhitespace "`n"
+			continue
+		}
+
+		; Handle extraneous text
+		if !inContinuationSection {
+			if trimmedLine ~= "^;" { ; Single-line comment
+				if options.HasProp('keepComments') && options.keepComments
+					scriptText .= trimmedIfNotKeepWhitespace "`n"
+				continue
+			} else if trimmedLine = "" { ; Blank lines
+				if options.HasProp('keepWhitespace') && options.keepWhitespace
+					scriptText .= A_LoopReadLine "`n"
+				continue
+			} else if trimmedLine ~= "^/\*" { ; Block comments
+				inCommentBlock := !(trimmedLine ~= "\*/$")
+				if options.HasProp('keepComments') && options.keepComments
+					scriptText .= trimmedIfNotKeepWhitespace "`n"
+				continue
+			}
+		}
+
+		; Enter a continuation section
+		if trimmedLine ~= "^\(" && IsRealContinuationSection(SubStr(trimmedLine, 2))
+			inContinuationSection := true
+		; Or exit a continuation section
+		else if trimmedLine ~= "^\)"
+			inContinuationSection := false
+
+		if inContinuationSection {
+			scriptText .= A_LoopReadLine "`n"
+			continue
+		}
+
+		; Remove trailing comment
+		trimmedLine := RegExReplace(trimmedLine, "\s+;.*$")
+
+		; #Include lines
+		if RegExMatch(trimmedLine, "i)^#Include(?<again>Again)?\s*[,\s]\s*(?<file>.*)$", &match) {
+			includeFile := Trim(match.file, "`"' `t")
+			includeFile := RegExReplace(includeFile, "i)^\*i\s+", , &ignoreErrors)
+
+			; References to embedded scripts have a filename which starts with *
+			; and will be handled by the interpreter
+			if SubStr(includeFile, 1, 1) = "*" {
+				scriptText .= A_LoopReadLine "`n"
+				continue
+			}
+			if RegExMatch(includeFile, "^<(.+)>$", &match) {
+				if foundFile := FindLibraryFile(match.1, firstScriptDir)
+					includeFile := foundFile
+			} else {
+				includeFile := DerefIncludePath(includeFile, derefIncludeVars)
+				if FileExist(includeFile) ~= "D" {
+					SetWorkingDir includeFile
+					scriptText .= A_LoopReadLine "`n"
+					continue
+				}
+			}
+
+			includeFile := NormalizePath(includeFile)
+
+			; Determine whether the file is already included
+			alreadyIncluded := false
+			for k, v in fileList
+				if v = includeFile
+					alreadyIncluded := true
+			until alreadyIncluded
+
+			; Add to the list
+			if !alreadyIncluded
+				fileList.Push(includeFile)
+
+			; Include the text where applicable
+			if !alreadyIncluded || match.again
+				PreprocessScript(&scriptText, includeFile, fileList, firstScriptDir, ignoreErrors, derefIncludeVars, options)
+			continue
+		}
+
+		if !options.HasProp('keepComments') || !options.keepComments
+			trimmedIfNotKeepWhitespace := RegExReplace(trimmedIfNotKeepWhitespace, "\s+;.*$")
+		scriptText .= trimmedIfNotKeepWhitespace "`n"
+	}
+
+	; Restore calling context
+	derefIncludeVars["A_LineFile"] := oldLineFile
+	SetWorkingDir oldWorkingDir
 }
 
-Base64_Encode(data) {
-	cbts(data, pBase64, &size) => DllCall("Crypt32\CryptBinaryToString", "Ptr", data, "UInt", data.Size,
-		"UInt", 0x40000001, "Ptr", pBase64, "UInt*", &size, "UInt")
-	if !cbts(data, 0, &size := 0)
-		throw Error("Failed to calculate b64 size")
-	base64 := Buffer(size * 2)
-	if !cbts(data, base64, &size)
-		throw Error("Failed to convert to b64")
-	return StrGet(base64)
+class CTempWD {
+	__New(newWD) {
+		this.oldWD := A_WorkingDir
+		SetWorkingDir newWD
+	}
+	__Delete() {
+		SetWorkingDir this.oldWD
+	}
 }
 
 ;
@@ -236,5 +376,3 @@ l,figure,form,ol,p,pre,table,ul{margin-bottom:2.5rem}.u-full-width{width:100%;bo
 x-width:100%;box-sizing:border-box}.u-pull-right{float:right}.u-pull-left{float:left}hr{margin-top:3rem;margin-bottom:3.
 5rem;border-width:0;border-top:1px solid #E1E1E1}.container:after,.row:after,.u-cf{content:"";display:table;clear:both}
 )"
-
-#Include ..\WebViewTooEx.ahk

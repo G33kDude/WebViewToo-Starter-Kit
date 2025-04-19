@@ -1,11 +1,16 @@
 #Requires AutoHotkey v2
 
-; Demonstrates advanced usage of the routing functions of WebViewTooEx, to load
-; resources from a variety of places like Strings, Buffers, Files, Directories,
-; CHM Files, and dynamic generation.
+; This example displays a UI where some of the resources are loaded using custom
+; script logic. In the other examples, when defining routes to resources, those
+; resources (or paths to those resources) are hard-coded into the script. In
+; this example, we demonstrate how resources can be supplied dynamically at
+; run-time based on the path it was requested from.
 
-; HTML content for the page
-html := "
+#Include ..\Lib\WebViewToo\Lib\WebViewToo.ahk
+
+g := WebViewGui("Resize")
+
+g.AddTextRoute "index.html", "
 ( ; html
 <!doctype html><html>
 <head>
@@ -13,15 +18,12 @@ html := "
 	<style>div { margin-bottom: 0.5em }</style>
 </head>
 <body>
-	<div><img src="./image.png" /></div>
 	<div>Hello <span id="username"></span>!<br></div>
 	<div>
 		<input type="text" id="requestPath" value="someValue">
 		<button id="dynamicRequest">Dynamic Request</button>
 	</div>
-	<div><button onClick="ahk.global.Callback()">Direct global access</button></div>
 	<div>
-		<a href="//bootstrap.localhost/index.html">Go to Bootstrap example</a>
 		<a href="//helpfile.localhost/docs/index.htm">Go to help file</a>
 	</div>
 	<div>
@@ -31,8 +33,7 @@ html := "
 </body>
 )"
 
-; JavaScript content for the page
-script := "
+g.AddTextRoute "index.js", "
 ( ; js
 document.querySelector("#dynamicRequest").addEventListener("click", (event) => {
 	fetch("/api/" + encodeURIComponent(document.querySelector("#requestPath").value))
@@ -45,47 +46,43 @@ document.querySelector("#username").innerText = name
 document.querySelector("pre").innerText = await (await fetch("/script.ahk")).text()
 )"
 
-win := WebViewTooEx()
+; Resource from file
+g.AddFileRoute A_ScriptFullPath, '/script.ahk'
 
-; Map ahk.localhost URLs to these resources
-win.Route 'ahk.localhost', [
-	; Resource from string
-	['/index.html', html],
-	['/index.js', script],
+; Dynamic callback
+g.AddRoute '/api/*', (uri) => MsgBox('Request for ' uri.Path)
 
-	; Resource from Base64
-	['/image.png', image()],
-
-	; Resource from file
-	['/script.ahk', FileRead(A_ScriptFullPath, "RAW")],
-
-	; Resource generated at runtime
-	['/api/name', (uri) => A_UserName],
-
-	; Dynamic callback
-	['/api/*', (uri) => MsgBox('Request for ' String(uri))],
-]
-
-; Allow ahk.localhost pages to use AHK variables and functions by direct access
-win.AllowGlobalAccessFor 'ahk.localhost'
-
-; Map bootstrap.localhost URLs to the Pages folder
-win.Route 'bootstrap.localhost', '..\WebViewToo\Pages'
+; Resource generated at runtime
+g.AddRoute '/api/name', (uri) => A_UserName
 
 ; Map helpfile.localhost URLs to the contents of AutoHotkey.chm
-win.Route 'helpfile.localhost', A_AhkPath "\..\AutoHotkey.chm"
+g.AddRoute "**", loadFromChm, "helpfile.localhost"
 
 ; Inject our own modifications to the CHM
-win.NavigationCompleted FixChm
+g.Control.wv.add_NavigationCompleted FixChm
 
 ; Show the page
-win.Navigate "https://ahk.localhost/index.html"
-win.Show
+g.Navigate "index.html"
+g.Show "w800 h600"
 
-Callback(p*) {
-	MsgBox "Direct callback"
+
+NormalizePath(path) {
+	cc := DllCall("GetFullPathName", "str", path, "uint", 0, "ptr", 0, "ptr", 0, "uint")
+	buf := Buffer(cc * 2)
+	DllCall("GetFullPathName", "str", path, "uint", cc, "ptr", buf, "ptr", 0)
+	return StrGet(buf)
 }
 
+loadFromChm(uri) {
+	static chmPath := NormalizePath(A_AhkPath "\..\AutoHotkey.chm")
+	static xhr := ComObject("MSXML2.XMLHTTP.3.0")
+	xhr.open("GET", "ms-its:" chmPath "::" uri.Path, True)
+	try {
+		xhr.send()
+		rBody := xhr.responseBody
+		return WebView2.CreateMemStream(NumGet(ComObjValue(rBody), 8+A_PtrSize, "Ptr"), rBody.MaxIndex())
+	}
+}
 
 /**
  * This function forces the help file to show the offline toolbar instead of the
@@ -120,6 +117,3 @@ FixChm(ICoreWebView2, Args) {
 	})
 	)")
 }
-
-#Include image.ahk
-#Include ..\WebViewTooEx.ahk
