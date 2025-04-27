@@ -48,7 +48,7 @@ g.AddTextRoute "index.html", "
         }
         .sidebar > .ui.menu { width: 100%; }
 
-        .content {
+        main {
             margin-left: 100px;
             padding: 20px;
             width: calc(100% - 100px);
@@ -74,7 +74,7 @@ g.AddTextRoute "index.html", "
         </div>
     </nav>
 
-    <div class="content">
+    <main>
         <div class="ui tab active" data-tab="buttons">
             <h3 class="ui header">Buttons</h3>
             <button onclick="ahk.global.MsgBox('Button 1')" class="ui button">Default</button>
@@ -102,7 +102,7 @@ g.AddTextRoute "index.html", "
                     <p>This is a simple modal window.</p>
                 </div>
                 <div class="actions">
-                    <button class="ui button">Close</button>
+                    <button class="ui button" id="hide-modal">Close</button>
                 </div>
             </div>
         </div>
@@ -131,12 +131,15 @@ g.AddTextRoute "index.html", "
                 </tbody>
             </table>
         </div>
-    </div>
+    </main>
 
     <script>
         $('.menu .item').tab();
         $('#show-modal').click(function() {
             $('.ui.modal').modal('show');
+        });
+        $('#hide-modal').click(function() {
+            $('.ui.modal').modal('hide');
         });
     </script>
 </body>
